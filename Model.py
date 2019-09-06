@@ -4,7 +4,7 @@ import json
 from keras.applications.inception_v3 import InceptionV3
 from keras.applications import InceptionResNetV2
 from keras.models import Model, model_from_json
-from keras.layers import Dense, Flatten, Dropout
+from keras.layers import Dense, Flatten, Dropout, Conv2D
 
 from keras import layers
 from keras import models
@@ -18,10 +18,11 @@ for layer in base_model.layers[:300]:
     layer.trainable = False
  # print(base_model)
 # x = base_model.output
-x = Flatten()(base_model.output)
+x = Conv2D(128, (1,1), activation='relu')(base_model.output)
+x = Flatten()(x)
 x = Dense(128, activation = "relu")(x)
 x = Dropout(0.5)(x)
-x = Dense(512, activation="relu")(x)
+x = Dense(128, activation="relu")(x)
 
 ## predictions
 x = Dense(2, activation="softmax")(x)
