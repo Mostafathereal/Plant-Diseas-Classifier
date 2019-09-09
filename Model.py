@@ -9,9 +9,6 @@ from keras import optimizers
 from keras import layers
 from keras import models
 
-
-# class_labels = ['Tomato_Spider_mites_Two_spotted_spider_mite', 'Tomato_Septoria_leaf_spot']
-
 train_path = 'Data/train'
 test_path = 'Data/test'
 
@@ -19,32 +16,40 @@ test_path = 'Data/test'
 
 base_model = InceptionV3(weights='imagenet', include_top = False, input_shape = (256, 256, 3))
 
-for layer in base_model.layers[:300]:
+for layer in base_model.layers[:301]:
     layer.trainable = False
  # print(base_model)
 # x = base_model.output
+base_model.compile(loss = "categorical_crossentropy", optimizer = optimizers.Adam(lr=0.0001), metrics=['accuracy'])
+
+base_model.layers.pop()
+base_model.compile(loss = "categorical_crossentropy", optimizer = optimizers.Adam(lr=0.0001), metrics=['accuracy'])
 x = Conv2D(128, (1,1), activation='relu')(base_model.output)
 x = Flatten()(x)
-x = Dense(128, activation = "relu")(x)
+x = Dense(64, activation = "relu")(x)
 x = Dropout(0.5)(x)
-x = Dense(128, activation="relu")(x)
+x = Dense(64, activation="relu")(x)
 
 ## predictions
-x = Dense(2, activation="softmax")(x)
+x = Dense(15, activation="softmax")(x)
 
 
 
 model = Model(input = base_model.input, output = x)
 
-# model.compile(loss = "categorical_crossentropy", optimizer = optimizers.SGD(lr=0.0001, momentum=0.9), metrics=["accuracy"])
+model.compile(loss = "categorical_crossentropy", optimizer = optimizers.Adam(lr=0.0001), metrics=['accuracy'])
 
 
-train_batches = ImageDataGenerator().flow_from_directory(train_path, target_size = (256,256), batch_size = 32)
+train_batches = ImageDataGenerator().flow_from_directory(train_path, target_size = (256,256), batch_size = 128)
+test_batches = ImageDataGenerator().flow_from_directory(test_path, target_size = (256,256), batch_size = 128)
+
 
 
 
 model.summary()
-print(train_batches.class_indices)
+
+model.fit_generator(train_batches, steps_per_epoch = 145, epochs = 5, verbose = 2)
+
 
 
 
